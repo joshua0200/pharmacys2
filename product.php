@@ -79,28 +79,25 @@ while ($i == 1) {
 							</div>
 							<div class="form-group">
 								<label class="control-label">Measurement</label>
-								<input type="number" class="form-control" name="measurement" required="">
-								<div class="form-check">
-									<input class="form-check-input" type="radio" name="unit" id="exampleRadios1" value="ml" checked>
-									<label class="form-check-label" for="exampleRadios1">ml
-									</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="radio" name="unit" id="exampleRadios2" value="mg">
-									<label class="form-check-label" for="exampleRadios2">mg
-									</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="radio" name="unit" id="exampleRadios2" value="not applicable">
-									<label class="form-check-label" for="exampleRadios2">n/a
-									</label>
-								</div>
-							</div>
 
-							<div>
-								
+								<input type="number" class="form-control mb-1" name="measurement" required="">
+								<select name="unit" id="unit" class="form-control">
+									<option value="CC">cubic centimeter (CC)</option>
+									<option value="mL">milliliter (mL)</option>
+									<option value="L">liter (L)</option>
+									<option value="mm">millimeter (mm)</option>
+									<option value="cm">centimeter (cm)</option>
+									<option value="m">meter (m)</option>
+									<option value="mg">milligram (mg)</option>
+									<option value="g">gram/s (g)</option>
+									<option value="sm">small (sm)</option>
+									<option value="med">medium (med)</option>
+									<option value="large">large</option>
+									<option value="xl">xl</option>
+									<option value="xxl">xxl</option>
+									<option value="xxxl">xxxl</option>
+								</select>
 							</div>
-
 							<div class="form-group">
 								<label class="control-label">Description</label>
 								<textarea class="form-control" cols="30" rows="3" name="description"></textarea>
@@ -293,15 +290,7 @@ while ($i == 1) {
 		cat.find("[name='type_id']").val($(this).attr('data-type_id'))
 		cat.find("[name='measurement']").val($(this).attr('data-measurement'))
 		console.log($(this).attr('data-unit'));
-
-		if ($(this).attr('data-unit') == 'ml') {
-			cat.find("[name='unit'][value='ml").attr('checked', true);
-			cat.find("[name='unit'][value='mg'").attr('checked', false);
-		} else {
-			cat.find("[name='unit'][value='ml").attr('checked', false);
-			cat.find("[name='unit'][value='mg'").attr('checked', true);
-		}
-
+		cat.find("[name='unit']").val($(this).attr('data-unit'));
 
 		if ($(this).attr('data-pres') == 1) {
 			cat.find("[name='prescription']").attr('checked', true)

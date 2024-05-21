@@ -45,12 +45,13 @@
 
 			<!-- Table Panel -->
 			<div class="col-md-8">
-				<div class="card">
-					<div class="card-header">
+				<div class="card my-3">
+					<div class="card-header"> <button type="button" name="filter" class="btn btn-success float-right " onclick="toPDF()">Export to PDF</button>
 						<h4><b>Supplier List</b></h4>
-
+						
 					</div>
 					<div class="card-body">
+						
 						<table class="table table-bordered table-hover">
 							<thead>
 								<tr>
@@ -162,4 +163,7 @@
 		})
 	}
 	$('table').dataTable()
+	function toPDF() {
+		window.location.href = "supplier_pdf.php"
+	}
 </script>

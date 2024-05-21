@@ -1,4 +1,8 @@
 <style>
+	.ct-label {
+		word-wrap: break-word;
+		font-weight: bold;
+	}
 </style>
 <div class="container-fluid">
 
@@ -46,14 +50,14 @@
 				<div class="col-md-8 col-sm-12">
 					<div class="card shadow-sm">
 						<div class="card-header text-light" style="background-color: #041520;">
-							<div class="row">
-								<div class="col">
+							<div class="d-flex">
+								<div class=" w-100">
 									<b>Sales:</b>
 									<div class="h6 mb-0">Month of <span id="sales-month"></span></div>
 									<div class="h7">₱ <span id="total-sales"></span></div>
 								</div>
-								<div class="col">
-									<select name="" id="sales-chart" class="form-control float-right" value="<?= date('Y') ?>" onchange="loadSales($(this).val())">
+								<div class=" ">
+									<select name="" id="sales-chart" class="form-control float-right mr-2" value="<?= date('m') ?>" onchange="loadSales($(this).val(), $('#sales-chart-year').val())" style="width: 150px">
 										<option value="1">January</option>
 										<option value="2">February</option>
 										<option value="3">March</option>
@@ -66,6 +70,16 @@
 										<option value="10">October</option>
 										<option value="11">November</option>
 										<option value="12">December</option>
+									</select>
+								</div>
+								<div class="">
+									<select name="" id="sales-chart-year" class="form-control" style="width: 100px" onchange="loadSales($('#sales-chart').val(), $(this).val())">
+										<?php
+										$currentYear = date("Y");
+										for ($i = $currentYear; $i >= 2022; $i--) {
+											echo "<option value='$i'>$i</option>";
+										}
+										?>
 									</select>
 								</div>
 							</div>
@@ -90,12 +104,12 @@
 			<div class="card shadow-sm mb-3">
 				<div class="card-header text-light" style="background-color: #041520;">
 					<div class="row">
-						<div class="col">
+						<div class="col-12">
 							<b>In-Demand Products:</b>
 							<div class="h6">Month of <span id="demand-month"></span></div>
 						</div>
-						<div class="col">
-							<select name="" id="demand-chart" class="form-control float-right" value="<?= date('Y') ?>" onchange="loadDemand($(this).val())">
+						<div class="col-6">
+							<select name="" id="demand-chart" class="form-control form-control-sm float-right" value="<?= date('m') ?>" onchange="loadDemand($(this).val(),$('#demand-chart-year').val())">
 								<option value="1">January</option>
 								<option value="2">February</option>
 								<option value="3">March</option>
@@ -109,7 +123,20 @@
 								<option value="11">November</option>
 								<option value="12">December</option>
 							</select>
+
 						</div>
+						<div class="col-6">
+							<select name="" id="demand-chart-year" class="form-control form-control-sm" style="width: 100px" onchange="loadDemand($('#demand-chart').val(), $(this).val())">
+								<?php
+								$currentYear = date("Y");
+								for ($i = $currentYear; $i >= 2022; $i--) {
+									echo "<option value='$i'>$i</option>";
+								}
+								?>
+							</select>
+							<a class="float-left text-primary m-2" style="cursor: pointer;" onclick="exportDemand()">Export PDF</a>
+						</div>
+						
 					</div>
 
 				</div>
@@ -123,7 +150,7 @@
 			<div class="card shadow-sm mb-3">
 				<div class="card-header text-light" style="background-color: #041520;">
 
-					<b>In-demand products next Month:</b>
+					<b>Predicted in-demand products next Month:</b>
 					<div class="h6">Based from historical data</div>
 
 
@@ -142,7 +169,7 @@
 				</div>
 				<div class="card-body">
 					<div class="h7 text-muted mb-3">Products expiring 2 weeks from now are displayed.</div>
-					<ul class="list-group">
+					<ul class="list-group " style="height: 400px; overflow-y: auto;">
 						<?php
 						$d = 14;
 						$date = date_add(date_create(), date_interval_create_from_date_string("14 Days"));
@@ -191,7 +218,7 @@
 					<b>CRITICAL STOCK:</b>
 				</div>
 				<div class="card-body">
-					<ul class="list-group">
+					<ul class="list-group" style="height: 400px; overflow-y: auto;">
 						<?php
 						$i = 1;
 						$product = $conn->query("select p.id, p.name, p.measurement, sum(i.qty) as total from product_list p right join inventory i ON p.id = i.product_id WHERE i.expiry_date > '" . date('Y-m-d') . "' group by i.product_id");
@@ -228,12 +255,14 @@
 
 </div>
 <script>
-	loadSales($("#sales-chart").val());
-	loadDemand($("#demand-chart").val());
+	loadSales($("#sales-chart").val(), $("#sales-chart-year").val());
+	loadDemand($("#demand-chart").val(), $("#demand-chart-year").val());
 
-	function loadSales(month) {
+	function loadSales(month, year) {
+		console.log(month, year);
 		$.post('charts/sales.php', {
-			month
+			month,
+			year
 		}, function(response) {
 			response = JSON.parse(response);
 			$("#sales-month").text(response.monthName);
@@ -261,9 +290,10 @@
 		});
 	}
 
-	function loadDemand(month) {
+	function loadDemand(month, year) {
 		$.post('charts/demand.php', {
-			month
+			month,
+			year
 		}, function(response) {
 
 			response = JSON.parse(response);
@@ -275,8 +305,14 @@
 				seriesBarDistance: 10,
 				reverseData: true,
 				horizontalBars: true,
-				axisY: {
-					offset: 70
+				// axisY: {
+				// 	offset: 70
+				// },
+				chartPadding: {
+					top: 20,
+					right: 40,
+					bottom: 20,
+					left: 60
 				}
 			});
 		});
@@ -287,10 +323,20 @@
 	}, function(response) {
 		response = JSON.parse(response);
 		console.log(response);
+		let total = 0;
+		response.data.forEach(number => total += number);
+		// response.data.forEach(number => total += number);
+		let percentages = response.data.map(function(num) {
+			return ((num / total) * 100).toFixed(2);
+		});
 		var data = {
 			labels: response.products,
-			series: response.data
+			series: percentages
 		};
+		for (var i = 0; i < response.products.length; i++) {
+			response.products[i] += ' ' + percentages[i] + '%';
+		}
+		console.log('Percentages', percentages)
 
 		var options = {
 			labelInterpolationFnc: function(value) {
@@ -299,9 +345,9 @@
 		};
 		var responsiveOptions = [
 			['screen and (min-width: 640px)', {
-				chartPadding: 50,
-				labelOffset: 50,
-				labelDirection: 'explode',
+				chartPadding: 20,
+				labelOffset: 10,
+				labelDirection: 'neutral',
 				labelInterpolationFnc: function(value) {
 					return value;
 				}
@@ -315,4 +361,11 @@
 
 		new Chartist.Pie('#predict', data, options, responsiveOptions);
 	});
+
+
+
+	function exportDemand() {
+		var id = $("#demand-chart").val();
+		window.location.href = "demand_pdf.php?id=" + id;
+	}
 </script>

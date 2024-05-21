@@ -4,7 +4,7 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="card my-3">
-					<div class="card-header">
+					<div class="card-header"> <button type="button" name="filter" class="btn btn-success float-right" onclick="toPDF()">Export to PDF</button>
 						<h4><b>Inventory</b></h4>
 					</div>
 					<div class="card-body">
@@ -20,7 +20,7 @@
 							<tbody>
 								<?php
 								$i = 1;
-								$product = $conn->query("select p.id, p.name, p.measurement, p.price, sum(i.qty) as total from product_list p right join inventory i ON p.id = i.product_id WHERE i.expiry_date > '" . date('Y-m-d') . "' group by i.product_id");
+								$product = $conn->query("SELECT p.id, p.name, p.measurement, p.price, sum(i.qty) as total from product_list p right join inventory i ON p.id = i.product_id WHERE i.expiry_date > '" . date('Y-m-d') . "' group by i.product_id");
 								while ($row = $product->fetch_assoc()) :
 									$inv = $conn->query("SELECT * FROM inventory WHERE expiry_date > '" . date('Y-m-d') . "' AND qty > 0 AND product_id = " . $row['id']);
 									$inv_count = $inv->num_rows;
@@ -67,11 +67,38 @@
 				</div>
 				<hr>
 				<div class="card">
+				<div class="card-header"> 
 					<div class="card-header">
 						<h4><b>Expired Products</b></h4>
 					</div>
 					<div class="card-body">
-						<table class="table table-bordered" id="expired">
+						<div class="h6 font-weight-bold">Filter</div>
+						<?php
+						if (isset($_POST['filter'])) {
+							extract($_POST);
+						}
+						?>
+						<form action="" method="post">
+							<div class="d-flex">
+								<div class="mr-2">
+									<div class="h7">From</div>
+									<input type="date" name="from" id="from" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['from'] : date('Y-m-01') ?>" required>
+								</div>
+								<div class="mr-2">
+									<div class="h7">To</div>
+									<input type="date" name="to" id="to" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['to'] : date('Y-m-d') ?>" required>
+								</div>
+								<div class="mr-2">
+									<div class="h7">.</div>
+									<button type="submit" name="filter" class="btn btn-primary">Fetch</button>
+								</div>
+								<div>
+									<div class="h7">Export</div>
+									<button type="button" name="filter" class="btn btn-success" onclick="toPDF2()">PDF</button>
+								</div>
+							</div>
+						</form>
+						<table class="table table-bordered">
 							<thead>
 								<th class="text-center">#</th>
 								<th class="text-center">Batch No</th>
@@ -82,11 +109,28 @@
 							<tbody>
 								<?php
 								$i = 1;
-								$product = $conn->query("SELECT * FROM inventory i INNER JOIN product_list p ON i.product_id = p.id WHERE expiry_date <= '" . date('y-m-d') . "' order by date(expiry_date) desc");
-								while ($row = $product->fetch_assoc()) :
+								if (isset($_POST['filter'])) {
 
+									$datetime = new DateTime($from);
+									$from = $datetime->format('Y-m-d H:i:s');
+									$datetime = new DateTime($to . " 00:00:00");
+									$datetime->modify('+1 day');
+									$to = $datetime->format('Y-m-d H:i:s');
+								} else {
+									$tender = "";
+									$datetime = new DateTime(date('Y-m-01 h:i:s'));
+									$from = $datetime->format('Y-m-d H:i:s');
+									$datetime =  new DateTime(date('Y-m-d h:i:s'));
+									$datetime->modify('+1 day');
+									$to = $datetime->format('Y-m-d H:i:s');
+								}
+
+								$qry = "SELECT * FROM inventory i INNER JOIN product_list p ON i.product_id = p.id WHERE (i.expiry_date BETWEEN '$from' AND '$to') order by date(i.date_updated) desc";
+								$sales = $conn->query($qry);
+
+								while ($row = $sales->fetch_assoc()) :
 								?>
-									<tr>
+											<tr>
 										<td class="text-center"><?php echo $i++ ?></td>
 										<td class="text-center"><?php echo $row['batch_no'] ?></td>
 										<td class=""><?php echo $row['name'] ?> <sup><?php echo $row['measurement'] ?></sup> </td>
@@ -135,5 +179,12 @@
 				}
 			}
 		})
+	}
+
+	function toPDF() {
+		window.location.href = "inventory_pdf.php"
+	}
+	function toPDF2() {
+		window.location.href = "expired_pdf.php?tender=" + $("#tender").val() + "&from=" + $("#from").val() + "&to=" + $("#to").val();
 	}
 </script>

@@ -38,16 +38,21 @@
 									</select>
 								</div>
 								<div class="mr-2">
-									<div class="h7">From:</div>
-									<input type="date" name="from" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['from'] : date('Y-m-01') ?>" required>
+									<div class="h7">From</div>
+									<input type="date" name="from" id="from" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['from'] : date('Y-m-01') ?>" required>
 								</div>
 								<div class="mr-2">
-									<div class="h7">To:</div>
-									<input type="date" name="to" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['to'] : date('Y-m-d') ?>" required>
+									<div class="h7">To</div>
+									<input type="date" name="to" id="to" class="form-control mb-3" value="<?= (isset($_POST['filter'])) ? $_POST['to'] : date('Y-m-d') ?>" required>
 								</div>
-								<div>
+								<div class="mr-2">
 									<div class="h7">.</div>
 									<button type="submit" name="filter" class="btn btn-primary">Fetch</button>
+								</div>
+								<div>
+									<!-- GET Current User -->
+									<div class="h7">Export</div>
+									<button type="button" name="filter" class="btn btn-success" onclick="toPDF()">PDF</button>
 								</div>
 							</div>
 						</form>
@@ -130,5 +135,10 @@
 				}
 			}
 		})
+	}
+
+
+	function toPDF() {
+		window.location.href = "logs_pdf.php?tender=" + $("<?$_SESSION['login_id']?>").val() + "&from=" + $("#from").val() + "&to=" + $("#to").val();
 	}
 </script>
